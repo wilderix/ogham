@@ -1,111 +1,128 @@
-import unicodedata
+# 3rd Party Imports
 import pandas as pd
 import streamlit as st
-
-tree_meanings = [ 
-    {'name': 'beith', 'tree': 'birch', 'start date': 'Dec 24', 'end date': 'Jan 20', 'meanings': ['new beginnings', 'change', 'release', 'rebirth', 'cleansing', 'hope', 'pioneering energy']},
-    {'name': 'luis', 'tree': 'rowan', 'start date': 'Jan 21', 'end date': 'Feb 17', 'meanings': ['insight', 'protection', 'blessings', 'psychic intuition', 'fiery energy', 'perserverance', 'humility']},
-    {'name': 'fearn', 'tree': 'alder', 'start date': 'Mar 18', 'end date': 'Apr 14', 'meanings': ['confidence', 'encouragement', 'shield', 'honorable conduct', 'discrimination', 'bad luck', 'secrecy']},
-    {'name': 'sail', 'tree': 'willow', 'start date': 'Apr 15', 'end date': 'May 12', 'meanings': ['knowledge', 'spiritual growth', 'moon cycles', "women's cycles", 'April', 'harmony', 'balance', 'grief', 'dreams', 'emotion']},
-    {'name': 'nion', 'tree': 'ash', 'start date': 'Feb 18', 'end date': 'Mar 17', 'meanings': ['sacred', 'transitions', 'creativity', 'connections', 'courage', 'focus', 'solar energy', 'vitality']},
-    {'name': 'uath', 'tree': 'hawthorn', 'start date': 'May 13', 'end date': 'Jun 9', 'meanings': ['cleansing', 'protection', 'defense', 'fertility', 'masculinity', 'love', 'happiness', 'gentleness', 'beauty']},
-    {'name': 'dair', 'tree': 'oak', 'start date': 'Jun 10', 'end date': 'Jul 7', 'meanings': ['strength', 'resiliance', 'self-confidence', 'leadership', 'trust', 'soverieignty', 'loyalty']},
-    {'name': 'tinne', 'tree': 'holly', 'start date': 'Jul 8', 'end date': 'Aug 4', 'meanings': ['immordtality', 'unity', 'courage', 'stability of home', 'empathy', 'boundaries', 'protection']},
-    {'name': 'coll', 'tree': 'hazel', 'start date': 'Jul 8', 'end date': 'Aug 4', 'meanings': ['wisdom', 'creativity', 'knowledge', 'divination', 'sacred wells', 'communication']},
-    {'name': 'ceirt', 'tree': 'apple', 'start date': 'Aug 5', 'end date': 'Sep 1', 'meanings': ['love', 'faithfulness', 'rebirth', 'prosperity', 'fertility', 'attraction', 'faerie realms', 'youthful enerty']},
-    {'name': 'muin', 'tree': 'vine', 'start date': 'Sep 2', 'end date': 'Sept 29', 'meanings': ['prophecy', 'truth speaking', 'inward journey', 'life lessons learned', 'harvest', 'wealth', 'cycles']},
-    {'name': 'gort', 'tree': 'ivy', 'start date': 'Sep 30', 'end date': 'Oct 27', 'meanings': ['growth', 'wildness', "women's good fortune", 'mystical development', 'protective magic', 'good fortune', 'steadfastness', 'friendship', 'connections', 'support']},
-    {'name': 'ngeadal', 'tree': 'reed', 'start date': 'Oct 28', 'end date': 'Nov 24', 'meanings': ['music', 'direct action', 'finding purpose', 'healing', 'health', 'social gathering', 'responsibility', 'ancestral skills', 'order to chaos']},
-    {'name': 'straif', 'tree': 'blackthorn', 'start date': 'Oct 28', 'end date': 'Nov 24', 'meanings': ['authority', 'control', 'triumph', 'power', 'anger', 'magical protection', 'banishing negativity']},
-    {'name': 'ruis', 'tree': 'elder', 'start date': 'Nov 25', 'end date': 'Dec 23', 'meanings': ['endings', 'maturity', 'wisdom', 'polarity', 'equilibrium', 'purification', 'initiation to dark mysteries', 'underworld goddess work']},
-    {'name': 'ailm', 'tree': 'elm', 'meanings': ['clarity', 'alignment', 'perspective', 'calm', 'contemplation', 'meditation']},
-    {'name': 'onn', 'tree': 'gorse', 'meanings': ['long-term planning', 'perserverance', 'hope', 'sexuality', 'financial abundance', 'solar energy', 'life force']},
-    {'name': 'ur', 'tree': 'heather', 'meanings': ['passion', 'generosity', 'healing', 'positivity', 'love', 'goddess blessings']},
-    {'name': 'eadhadh', 'tree': 'aspen', 'meanings': ['endurance', 'courage', 'strong will', 'success', 'spiritual protection']},
-    {'name': 'iodhadh', 'tree': 'yew', 'meanings': ['death', 'endings', 'rebirth', 'ancestral wisdom', 'reincarnation', 'other world journeying']}
-]
-tree_df = pd.DataFrame.from_dict(tree_meanings)
+from streamlit import session_state as ss
 
 
-start, end = 5760, 5788
-ogham_set = {}
-aicme_idx = None
+# Built-in Imports
+import unicodedata
 
-aicmes = ['Beithe', 'hÚatha', 'Muine', 'Ailme', 'Forfeda']
-aicme_markers = []
-for a, name in enumerate(aicmes):
-    marker = a * 5
-    marker += start
-    marker += 1
-    aicme_markers.append(marker)
 
-for u in range(start, end+1):
-    idx = u - 5760
-    category = unicodedata.category(chr(u))
-    long_name = unicodedata.name(chr(u))
-    long_name = long_name.replace('OGHAM LETTER', '').lower().strip()
-    long_name = long_name.replace('ogham', '').strip()
+# Local Imports
+from ogham_data import ogham_data
 
-    # st.write(f"{chr(u)} '{long_name}'")
 
-    if long_name in ('ngeadal', 'straif'):
-        english = long_name[:2]
-    elif 'mark' in long_name:
-        english = None
-    elif long_name == 'fearn':
-        english = 'w'
-    elif long_name == 'uath':
-        english = 'h'
-    elif long_name == 'ceirt':
-        english = 'q'
+# Data Preparation
+ogham_df = pd.DataFrame(ogham_data)
+
+
+# Initialize Session State
+if 'menu_selection' not in ss:
+    ss['menu_selection'] = 'Alphabet'
+
+
+# Callbacks
+def callback_basic(old, new=None):
+    if new:
+        ss[old] = ss[new]
     else:
-        english = long_name[0]
-
-    if u in aicme_markers and category == 'Lo':
-        aicme_idx = aicme_markers.index(u)
-        aicme_name = aicmes[aicme_idx]
-    elif category != 'Lo':
-        aicme_name = None
-
-    ogham_set[idx] = {
-        'code_point': u,
-        'ogham_character': chr(u),
-        'english_analog': english,
-        'category': category,
-        'name': long_name,
-        'aicme': aicme_name
-    }
-
-    ogham_df = pd.DataFrame.from_dict(ogham_set).T
-    ogham_merged = ogham_df.merge(tree_df, how='left', on='name')
+        ss[old] = ss[f"{old}_new"]
 
 
-def replace_english_letters(input_text):
-    output_text = input_text[:]
-    output_text = output_text.replace('x', 'gs')
-    return output_text
+# Local Functions
+def strip_accents(text):
+    normalized_text = unicodedata.normalize('NFD', text)
+    re_encoded_text = normalized_text.encode('ascii', 'ignore').decode('utf-8')
+    return str(re_encoded_text)
 
-def convert_english_to_ogham(input_text):
-    english_list = ogham_df['english_analog'].to_list()
-    ogham_list = ogham_df['ogham_character'].to_list()
 
-    output_text = ogham_list[-2]
-    for e in input_text:
-        if e in english_list:
-            output_text += ogham_list[english_list.index(e)]
+def convert(english_text):
+    english_text = strip_accents(english_text)
+    english_text = english_text.replace(' ', '  ')  # double the spaces to make the ogham words stand out
+    english_text = english_text.lower()
+    ogham_text = '᚛'
+    for letter in english_text:
+        if letter == ':':
+            ogham_letter += ": ᚛"
         else:
-            output_text += e
-    
-    return output_text
+            try:
+                ogham_letter = ogham_df.loc[ogham_df['english_analog'].str.contains(letter, na=False), 'ogham_character'].values[0]
+            except:
+                ogham_letter = "?"
+        ogham_text += ogham_letter
+    return ogham_text
 
 
-st.dataframe(ogham_df)
+with st.sidebar:
+    st.header("Ogham")
+    st.selectbox(
+        label='Menu',
+        options=('Alphabet', 'Quiz', 'Data'),
+        key='menu_selection_new',
+        on_change=callback_basic,
+        kwargs={'old': 'menu_selection'}
+    )
 
-for letter in ogham_set.values():
-    st.button(f"{letter['ogham_character']} - {letter['name']}")    
+st.title(ss['menu_selection'])
 
-my_name = 'rix'
-st.write(f"{my_name} --> {replace_english_letters(my_name)} --> {convert_english_to_ogham(replace_english_letters(my_name))}")
+if ss['menu_selection'] == 'Alphabet':
 
-st.dataframe(tree_df)
-st.dataframe(ogham_merged)
+    aicmes = ogham_df['aicme'].unique()
+    aicmes = [a for a in aicmes if a != None]
+
+    for aicme_name in aicmes:
+        alphabet_header_1, alphabet_header_2 = st.columns(2)
+        aicme_header_english = f"Aicme {aicme_name}"
+        aicme_header_ogham = convert(aicme_header_english)
+        alphabet_header_1.header(aicme_header_english)
+        alphabet_header_2.header(aicme_header_ogham)
+
+        ogham_letters = ogham_df.loc[ogham_df.aicme == aicme_name, ['ogham_character', 'ogham_name', 'english_analog', 'tree', 'meanings']]
+        for ogham_letter in ogham_letters.itertuples():
+
+            alphabet_col_1, alphabet_col_2 = st.columns(2)
+            
+            # letter_cols = st.columns((1, 1, 1, 5))
+            # letter_cols[0].subheader(ogham_letter[1])
+            # letter_cols[1].markdown(f'<h3 style="transform-origin: 25% 25%; transform: rotate(-90deg);">{ogham_letter[1]}</style>', unsafe_allow_html=True)
+            # letter_cols[2].markdown(f'<h3 style="transform-origin: 0 0; transform: rotate(-90deg);">{ogham_letter[1]}</style>', unsafe_allow_html=True)
+            
+            alphabet_col_1.subheader(ogham_letter[1])
+            alphabet_col_2.subheader(ogham_letter[1])
+
+            name_text = f"Name: {ogham_letter[2]}"
+            alphabet_col_1.write(name_text)
+            alphabet_col_2.write(convert(name_text))
+
+            alphabet_col_1.write(f"English Alphabet Equivalent: {ogham_letter[3].upper()}")
+            alphabet_col_2.write(f"{convert('English Alphabet Equivalent')}: {ogham_letter[3].upper()}")
+            
+            tree_text = f"Tree Association: {ogham_letter[4]}"
+            alphabet_col_1.write(tree_text)
+            alphabet_col_2.write(convert(tree_text))
+
+            if ogham_letter[5]:
+                meaning_text = f"Meanings: {', '.join(ogham_letter[5])}"
+            else:
+                meaning_text = "Meanings: only available for the other aicmes"
+            alphabet_col_1.write(meaning_text)
+            alphabet_col_2.write(convert(meaning_text))
+
+            st.divider()            
+
+
+elif ss['menu_selection'] == 'Data':
+    if st.checkbox("Show Session State"):
+        st.write(ss)
+    st.dataframe(ogham_df.loc[ogham_df['english_analog'].str.contains('w', na=False), ['ogham_character', 'english_analog']])
+    st.dataframe(ogham_df)
+
+elif ss['menu_selection'] == 'Quiz':
+    st.selectbox(
+        label="Quiz Type",
+        options=("Character recognition", "tree meaning", 'name recognition', 'transliteration')
+    )
+
+else:
+    st.write("Something went wrong")
+    st.write(ss)
