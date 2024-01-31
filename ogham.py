@@ -38,12 +38,14 @@ def strip_accents(text):
 
 def convert(english_text):
     english_text = strip_accents(english_text)
-    english_text = english_text.replace(' ', '  ')  # double the spaces to make the ogham words stand out
+    # english_text = english_text.replace(' ', '  ')  # double the spaces to make the ogham words stand out
     english_text = english_text.lower()
     ogham_text = '᚛'
     for letter in english_text:
         if letter == ':':
-            ogham_letter += ": ᚛"
+            ogham_letter = " ᚛"
+        elif letter == ',':
+            ogham_letter = "᚜ ᚛"
         else:
             try:
                 ogham_letter = ogham_df.loc[ogham_df['english_analog'].str.contains(letter, na=False), 'ogham_character'].values[0]
@@ -57,15 +59,41 @@ with st.sidebar:
     st.header("Ogham")
     st.selectbox(
         label='Menu',
-        options=('Alphabet', 'Quiz', 'Data'),
+        options=('Alphabet', 'Quiz', 'Data', 'Aicmes'),
         key='menu_selection_new',
         on_change=callback_basic,
         kwargs={'old': 'menu_selection'}
     )
 
+
 st.title(ss['menu_selection'])
 
-if ss['menu_selection'] == 'Alphabet':
+
+if ss['menu_selection'] == 'Aicmes':
+
+    # Beithe, hÚatha, Muine, Ailme, Forfeda, Punctuation
+
+    chars, names, english, trees = st.tabs(('Ogham Characters', 'Ogham Names', 'English Letters', 'Tree Correspondence'))
+    chars.dataframe(
+        ogham_df.pivot(index='aicme_position', columns='aicme', values='ogham_character'),
+        hide_index=True,
+        column_order=('Beithe', 'hÚatha', 'Muine', 'Ailme', 'Forfeda', 'Punctuation')
+    )
+    names.dataframe(ogham_df.pivot(index='aicme_position', columns='aicme', values='ogham_name'),
+        hide_index=True,
+        column_order=('Beithe', 'hÚatha', 'Muine', 'Ailme',  'Forfeda', 'Punctuation')
+    )
+    english.dataframe(ogham_df.pivot(index='aicme_position', columns='aicme', values='english_analog'),
+        hide_index=True,
+        column_order=('Beithe', 'hÚatha', 'Muine', 'Ailme',  'Forfeda', 'Punctuation')
+    )
+    trees.dataframe(ogham_df.pivot(index='aicme_position', columns='aicme', values='tree'),
+        hide_index=True,
+        column_order=('Beithe', 'hÚatha', 'Muine', 'Ailme',  'Forfeda', 'Punctuation')
+    )
+
+
+elif ss['menu_selection'] == 'Alphabet':
 
     aicmes = ogham_df['aicme'].unique()
     aicmes = [a for a in aicmes if a != None]
@@ -94,8 +122,8 @@ if ss['menu_selection'] == 'Alphabet':
             alphabet_col_1.write(name_text)
             alphabet_col_2.write(convert(name_text))
 
-            alphabet_col_1.write(f"English Alphabet Equivalent: {ogham_letter[3].upper()}")
-            alphabet_col_2.write(f"{convert('English Alphabet Equivalent')}: {ogham_letter[3].upper()}")
+            alphabet_col_1.write(f"English Alphabet Equivalent: {ogham_letter[3]}")
+            alphabet_col_2.write(f"{convert('English Alphabet Equivalent')} {ogham_letter[3]}")
             
             tree_text = f"Tree Association: {ogham_letter[4]}"
             alphabet_col_1.write(tree_text)
@@ -117,11 +145,14 @@ elif ss['menu_selection'] == 'Data':
     st.dataframe(ogham_df.loc[ogham_df['english_analog'].str.contains('w', na=False), ['ogham_character', 'english_analog']])
     st.dataframe(ogham_df)
 
+
 elif ss['menu_selection'] == 'Quiz':
     st.selectbox(
         label="Quiz Type",
         options=("Character recognition", "tree meaning", 'name recognition', 'transliteration')
     )
+
+
 
 else:
     st.write("Something went wrong")
