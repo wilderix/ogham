@@ -9,16 +9,21 @@ import unicodedata
 
 
 # Local Imports
-from ogham_data import ogham_data
+from ogham_data import ogham_data, kennings
 
 
 # Data Preparation
 ogham_df = pd.DataFrame(ogham_data)
+kennings_df = pd.DataFrame(kennings)
 
 
 # Initialize Session State
 if 'menu_selection' not in ss:
     ss['menu_selection'] = 'Alphabet'
+if 'aicme_stroke' not in ss:
+    ss['aicme_stroke'] = ''
+if 'aicme_stroke_conversion' not in ss:
+    ss['aicme_stroke_conversion'] = ''
 
 
 # Callbacks
@@ -28,6 +33,39 @@ def callback_basic(old, new=None):
     else:
         ss[old] = ss[f"{old}_new"]
 
+def callback_aicme_stroke(old, new=None):
+    callback_basic(old)
+    aicme_initials = 'bhmaf'
+    text_list = ss['aicme_stroke'][:].split()
+    n = 2
+    # pairs = [ss['aicme_stroke'][i:i+n] for i in range(0, len(ss['aicme_stroke']), n)]
+    output_list = []
+    for text in text_list:
+        output_text = ''
+        pairs = [text[i:i+n] for i in range(0, len(text), n)]
+        for pair in pairs:
+            if pair[0] == 'b':
+                aicme = 'Beithe'
+            elif pair[0] == 'h':
+                aicme = 'hÚatha'
+            elif pair[0] == 'm':
+                aicme = 'Muine'
+            elif pair[0] == 'a':
+                aicme = 'Ailme'
+            elif pair[0] == 'f':
+                aicme = 'Forfeda'
+
+            if pair[0] not in aicme_initials and pair[1] not in '12345':
+                st.warning("Get it right")
+            else:
+                ogham_letter = ogham_df.loc[
+                    (ogham_df['aicme'] == aicme) &
+                    (ogham_df['aicme_position'] == int(pair[1])),
+                    ['ogham_character']
+                ].iloc[0, 0]
+            output_text += ogham_letter
+        output_list.append(output_text)
+    ss['aicme_stroke_conversion'] = output_list
 
 # Local Functions
 def strip_accents(text):
@@ -59,11 +97,13 @@ with st.sidebar:
     st.header("Ogham")
     st.selectbox(
         label='Menu',
-        options=('Alphabet', 'Quiz', 'Data', 'Aicmes'),
+        options=('Alphabet', 'Quiz', 'Data', 'Aicmes', 'Write'),
         key='menu_selection_new',
         on_change=callback_basic,
         kwargs={'old': 'menu_selection'}
     )
+    if st.checkbox("Show Sessioin State"):
+        ss
 
 
 st.title(ss['menu_selection'])
@@ -144,6 +184,19 @@ elif ss['menu_selection'] == 'Data':
         st.write(ss)
     st.dataframe(ogham_df.loc[ogham_df['english_analog'].str.contains('w', na=False), ['ogham_character', 'english_analog']])
     st.dataframe(ogham_df)
+    st.dataframe(kennings_df)
+
+
+elif ss['menu_selection'] == 'Write':
+    pass
+    st.text_input(
+        label="Enter text here",
+        key='aicme_stroke_new',
+        on_change=callback_aicme_stroke,
+        kwargs={'old': 'aicme_stroke'}
+    )
+    for word in ss['aicme_stroke_conversion']:
+        st.write(word)
 
 
 elif ss['menu_selection'] == 'Quiz':
