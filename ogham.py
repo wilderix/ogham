@@ -22,9 +22,12 @@ if 'menu_selection' not in ss:
     ss['menu_selection'] = 'Alphabet'
 if 'aicme_stroke' not in ss:
     ss['aicme_stroke'] = ''
-if 'aicme_stroke_conversion' not in ss:
-    ss['aicme_stroke_conversion'] = ''
-
+if 'aicme_stroke_conversion_word' not in ss:
+    ss['aicme_stroke_conversion_word'] = ''
+if 'aicme_stroke_conversion_names' not in ss:
+    ss['aicme_stroke_conversion_names'] = ''
+if 'aicme_stroke_conversion_trees' not in ss:
+    ss['aicme_stroke_conversion_trees'] = ''
 
 # Callbacks
 def callback_basic(old, new=None):
@@ -38,10 +41,13 @@ def callback_aicme_stroke(old, new=None):
     aicme_initials = 'bhmaf'
     text_list = ss['aicme_stroke'][:].split()
     n = 2
-    # pairs = [ss['aicme_stroke'][i:i+n] for i in range(0, len(ss['aicme_stroke']), n)]
-    output_list = []
+    ogham_word_list = []
+    ogham_name_list = []
+    tree_list = []
     for text in text_list:
-        output_text = ''
+        ogham_word = ''
+        ogham_names = []
+        tree_names = []
         pairs = [text[i:i+n] for i in range(0, len(text), n)]
         for pair in pairs:
             if pair[0] == 'b':
@@ -55,18 +61,33 @@ def callback_aicme_stroke(old, new=None):
             elif pair[0] == 'f':
                 aicme = 'Forfeda'
 
-            if pair[0] not in aicme_initials and pair[1] not in '12345':
-                st.warning("Get it right")
+            if pair[0] not in aicme_initials:
+                st.warning("Each pair must start with b, h, m, a, or f")
+            elif pair[1] not in '123456':
+                st.warning("Each pair must end in a number between 1 and 6 (or 1 and 5 for aicmes besides Forfeda)")
+            elif pair[0] in 'bhma' and pair[0] == 6:
+                st.warning("The first for aimces only have 5 strokes")
             else:
-                ogham_letter = ogham_df.loc[
+                search_result = ogham_df.loc[
                     (ogham_df['aicme'] == aicme) &
                     (ogham_df['aicme_position'] == int(pair[1])),
-                    ['ogham_character']
-                ].iloc[0, 0]
-            output_text += ogham_letter
-        output_list.append(output_text)
-    ss['aicme_stroke_conversion'] = output_list
-
+                    ['ogham_character', 'ogham_name', 'tree']
+                ]
+                ogham_letter = search_result.iloc[0, 0]
+                ogham_name = search_result.iloc[0, 1]
+                tree = search_result.iloc[0, 2]
+            ogham_word += ogham_letter
+            ogham_names.append(ogham_name)
+            tree_names.append(tree)
+        ogham_word_list.append(ogham_word)
+        ogham_name_list.append(ogham_names)
+        tree_list.append(tree_names)
+    ogham_word_list = [f"᚛{o}᚜" for o in ogham_word_list]
+    ogham_name_list = [f"[{']-['.join(onl)}]" for onl in ogham_name_list]
+    tree_list = [f"[{']-['.join(tl)}]" for tl in tree_list]
+    ss['aicme_stroke_conversion_word'] = ogham_word_list
+    ss['aicme_stroke_conversion_names'] = ogham_name_list
+    ss['aicme_stroke_conversion_trees'] = tree_list
 # Local Functions
 def strip_accents(text):
     normalized_text = unicodedata.normalize('NFD', text)
@@ -188,15 +209,19 @@ elif ss['menu_selection'] == 'Data':
 
 
 elif ss['menu_selection'] == 'Write':
-    pass
+    st.write("Enter aimce/stroke combinations in the box below to create ogham strings.")
+    st.write("For example, to add the 3rd stroke in the Beithe aimcme, enter b3.")
+    st.write("Another example, to write 'beith' in ogham, enter 'b1a4a5h3h1'.")
     st.text_input(
         label="Enter text here",
         key='aicme_stroke_new',
         on_change=callback_aicme_stroke,
         kwargs={'old': 'aicme_stroke'}
     )
-    for word in ss['aicme_stroke_conversion']:
-        st.write(word)
+    for w, word in enumerate(ss['aicme_stroke_conversion_word']):
+        st.write(f"Ogham text: {word}")
+        st.markdown(f"Ogham character names: *{ss['aicme_stroke_conversion_names'][w]}*")
+        st.markdown(f"Ogham tree names: *{ss['aicme_stroke_conversion_trees'][w]}*")
 
 
 elif ss['menu_selection'] == 'Quiz':
