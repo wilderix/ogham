@@ -447,7 +447,7 @@ ogham_data = [
         "ogham_name": "eabhadh",
         "aicme": "Forfeda",
         "aicme_position": 1,
-        "tree": None,
+        "tree": 'grove',
         "start_date": None,
         "end_date": None,
         "meanings": None
@@ -460,7 +460,7 @@ ogham_data = [
         "ogham_name": "or",
         "aicme": "Forfeda",
         "aicme_position": 2,
-        "tree": None,
+        "tree": 'spindle',
         "start_date": None,
         "end_date": None,
         "meanings": None
@@ -473,7 +473,7 @@ ogham_data = [
         "ogham_name": "uilleann",
         "aicme": "Forfeda",
         "aicme_position": 3,
-        "tree": None,
+        "tree": 'honeysuckle',
         "start_date": None,
         "end_date": None,
         "meanings": None
@@ -486,7 +486,7 @@ ogham_data = [
         "ogham_name": "ifin",
         "aicme": "Forfeda",
         "aicme_position": 4,
-        "tree": None,
+        "tree": 'gooseberry',
         "start_date": None,
         "end_date": None,
         "meanings": None
@@ -499,7 +499,7 @@ ogham_data = [
         "ogham_name": "eamhancholl",
         "aicme": "Forfeda",
         "aicme_position": 5,
-        "tree": None,
+        "tree": 'hazeltwin',
         "start_date": None,
         "end_date": None,
         "meanings": None
@@ -512,7 +512,7 @@ ogham_data = [
         "ogham_name": "peith",
         "aicme": "Forfeda",
         "aicme_position": 6,
-        "tree": None,
+        "tree": 'unknown',
         "start_date": None,
         "end_date": None,
         "meanings": None
