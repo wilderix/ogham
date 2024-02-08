@@ -5,6 +5,7 @@ from streamlit import session_state as ss
 
 
 # Built-in Imports
+from random import randint
 import unicodedata
 
 
@@ -28,13 +29,18 @@ if 'aicme_stroke_conversion_names' not in ss:
     ss['aicme_stroke_conversion_names'] = ''
 if 'aicme_stroke_conversion_trees' not in ss:
     ss['aicme_stroke_conversion_trees'] = ''
+if 'quiz_type' not in ss:
+    ss['quiz_type'] = 'Character recognition'
+
 
 # Callbacks
+    
 def callback_basic(old, new=None):
     if new:
         ss[old] = ss[new]
     else:
         ss[old] = ss[f"{old}_new"]
+
 
 def callback_aicme_stroke(old, new=None):
     callback_basic(old)
@@ -88,7 +94,10 @@ def callback_aicme_stroke(old, new=None):
     ss['aicme_stroke_conversion_word'] = ogham_word_list
     ss['aicme_stroke_conversion_names'] = ogham_name_list
     ss['aicme_stroke_conversion_trees'] = tree_list
+
+
 # Local Functions
+    
 def strip_accents(text):
     normalized_text = unicodedata.normalize('NFD', text)
     re_encoded_text = normalized_text.encode('ascii', 'ignore').decode('utf-8')
@@ -209,9 +218,8 @@ elif ss['menu_selection'] == 'Data':
 
 
 elif ss['menu_selection'] == 'Write':
-    st.write("Enter aimce/stroke combinations in the box below to create ogham strings.")
-    st.write("For example, to add the 3rd stroke in the Beithe aimcme, enter b3.")
-    st.write("Another example, to write 'beith' in ogham, enter 'b1a4a5h3h1'.")
+    st.write("Enter aimce/stroke combinations in the box below to create ogham strings. Use spaces to separate words.")
+    st.write("For example, to add the 3rd stroke in the Beithe aimcme, enter b3. Another example, to write 'beith' in ogham, enter 'b1a4a5h3h1'.")
     st.text_input(
         label="Enter text here",
         key='aicme_stroke_new',
@@ -225,10 +233,21 @@ elif ss['menu_selection'] == 'Write':
 
 
 elif ss['menu_selection'] == 'Quiz':
+    st.header(ss['quiz_type'])
     st.selectbox(
         label="Quiz Type",
-        options=("Character recognition", "tree meaning", 'name recognition', 'transliteration')
+        options=("Character recognition", "Tree meaning", 'Name recognition', 'Transliteration'),
+        key='quiz_type_new',
+        on_change=callback_basic,
+        kwargs={'old': 'quiz_type'}
     )
+    
+    letter_to_guess_idx = randint(0, 28)
+    letter_to_guess = ogham_df.iloc[letter_to_guess_idx, 1]
+    st.subheader(letter_to_guess)
+
+    name_guess_options = []
+    
 
 
 
