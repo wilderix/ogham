@@ -5,7 +5,8 @@ from streamlit import session_state as ss
 
 
 # Built-in Imports
-from random import randint
+from random import choices, randint
+import random
 import unicodedata
 
 
@@ -242,11 +243,20 @@ elif ss['menu_selection'] == 'Quiz':
         kwargs={'old': 'quiz_type'}
     )
     
-    letter_to_guess_idx = randint(0, 28)
-    letter_to_guess = ogham_df.iloc[letter_to_guess_idx, 1]
+    letter_names = ogham_df['ogham_name'].to_list()
+    random.shuffle(letter_names)
+    random_letters = letter_names[:4]
+    letter_to_guess = random_letters[0]
+    character_to_guess = ogham_df.loc[ogham_df.ogham_name == letter_to_guess, 'ogham_character']
+    character_to_guess = character_to_guess.values[0]
+    st.write(random_letters)
     st.subheader(letter_to_guess)
+    st.subheader(character_to_guess)
 
-    name_guess_options = []
+    random.shuffle(random_letters)
+    button_cols = st.columns(4)
+    for rl, rand_let in enumerate(random_letters):
+        button_cols[rl].button(rand_let)
     
 
 
