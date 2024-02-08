@@ -32,6 +32,8 @@ if 'aicme_stroke_conversion_trees' not in ss:
     ss['aicme_stroke_conversion_trees'] = ''
 if 'quiz_type' not in ss:
     ss['quiz_type'] = 'Character recognition'
+if 'quiz_answer' not in ss:
+    ss['quiz_answer'] = {'letter': '', 'right_answer': '', 'guess': ''}
 
 
 # Callbacks
@@ -95,6 +97,13 @@ def callback_aicme_stroke(old, new=None):
     ss['aicme_stroke_conversion_word'] = ogham_word_list
     ss['aicme_stroke_conversion_names'] = ogham_name_list
     ss['aicme_stroke_conversion_trees'] = tree_list
+
+
+def callback_quiz(letter, answer, guess):
+    if answer == guess:
+        st.write(f"Correct! {letter} = {answer}")
+    else:
+        st.write(f"Incorrect! {letter} = {answer}, not {guess}")
 
 
 # Local Functions
@@ -244,19 +253,23 @@ elif ss['menu_selection'] == 'Quiz':
     )
     
     letter_names = ogham_df['ogham_name'].to_list()
-    random.shuffle(letter_names)
-    random_letters = letter_names[:4]
-    letter_to_guess = random_letters[0]
+    sample_letters = random.sample(letter_names, 4)
+    # random_letters = letter_names[:4]
+    letter_to_guess = sample_letters[0]
     character_to_guess = ogham_df.loc[ogham_df.ogham_name == letter_to_guess, 'ogham_character']
     character_to_guess = character_to_guess.values[0]
-    st.write(random_letters)
-    st.subheader(letter_to_guess)
+    # st.write(sample_letters)
+    # st.subheader(letter_to_guess)
     st.subheader(character_to_guess)
 
-    random.shuffle(random_letters)
+    random.shuffle(sample_letters)
     button_cols = st.columns(4)
-    for rl, rand_let in enumerate(random_letters):
-        button_cols[rl].button(rand_let)
+    for rl, rand_let in enumerate(sample_letters):
+        button_cols[rl].button(
+            label=rand_let,
+            on_click=callback_quiz,
+            kwargs={'letter': character_to_guess, 'answer': letter_to_guess, 'guess': rand_let}    
+        )
     
 
 
